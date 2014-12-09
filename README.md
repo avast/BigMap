@@ -31,9 +31,9 @@ Sorting have is processed in two steps:
  * division input file(s) to row chunks (these chunks are sorted in heap) and write chunks to disk
  * merge temporary files to output file
 
-	java -cp ${CLASSPATH} com.avast.bigmap.TsvRowSorter \
-	--input intputDirectoryOrFile \
-	--output sortedOutputFile \
+	java -cp ${CLASSPATH} com.avast.bigmap.TsvRowSorter 
+	--input intputDirectoryOrFile 
+	--output sortedOutputFile 
 	--key-columns 1 
 
 Usage
