@@ -24,7 +24,8 @@ import java.util.Comparator
 
 import scala.annotation.tailrec
 
-class BinarySearch[R <: Row](sortedTextFile: LargeFileReader
+class BinarySearch[R <: Row](sortedTextFile: LargeFileReader,
+                             sequenceSearchTopLimit: Long = 0
                               )(
                               implicit rowFactory: String => R,
                               rowComparator: Comparator[R]
@@ -39,7 +40,9 @@ class BinarySearch[R <: Row](sortedTextFile: LargeFileReader
 
   @tailrec
   final def search(row: R, from: Long, to: Long, depth: Int = 0): Option[R] = {
-    if (to - from < 1024)
+    if (to - from == 0)
+      return None
+    if (to - from < sequenceSearchTopLimit)
       return searchSequence(row, from, to)
 
     val half = from + ((to - from) / 2)
@@ -73,7 +76,7 @@ object BinarySearchTest {
 
     val row = new TsvRowFactory()(keyColumns, columnDelimiter)
     val f = new LargeFileReader(new File(sortedFile))
-    val s = new BinarySearch[TsvRow](f)(
+    val s = new BinarySearch[TsvRow](sortedTextFile = f, sequenceSearchTopLimit = 0)(
       row.apply,
       new TsvRowComparator()(keyColumns)
     )
