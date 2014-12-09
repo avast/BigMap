@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>BigMap</name>
+
+    <description>
+        In some data processing tasks we need to use huge maps or sets that are bigger
+        than available JVM heap space or they are loading too slow to standard Java or Scala Maps.
+
+        We use TSV format (text file with tab separated columns) for persist this kind of Maps or Sets.
+        Some columns are used as a key and rest of columns as a value.
+
+        Idea of this library is simple. We can prepare these maps once (sort by key),
+        store it to file and then use it as memory mapped file.
+        Searching key in sorted file has log(n) complexity.
+
+        If more processes uses the same memory mapped file, it exists in memory just once (on Linux).
+        This file can be loaded lazy by OS.
+    </description>
+
+    <groupId>com.avast</groupId>
+    <artifactId>big-map_${build.scala.version}</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>com.avast</groupId>
+        <artifactId>avast-oss-parent</artifactId>
+        <version>1.0.6</version>
+    </parent>
+    <url>https://github.com/avast/big-map</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://opensource.org/licenses/Apache-2.0</url>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>AVAST Software</name>
+        <url>http://www.avast.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>karas</id>
+            <name>Lukas Karas</name>
+            <email>karas@avast.com</email>
+            <organization>AVAST Software</organization>
+            <organizationUrl>http://www.avast.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:avast/big-map.git</connection>
+        <developerConnection>scm:git:git@github.com:avast/big-map.git</developerConnection>
+        <url>git@github.com:avast/big-map.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
+
+    <properties>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <gpg.keyname>A03063C5</gpg.keyname>
+        <gpg.defaultKeyring>false</gpg.defaultKeyring>
+    </properties>
+
+    <build>
+        <plugins>
+
+        </plugins>
+    </build>
+
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${build.scala.compiler.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.scopt</groupId>
+            <artifactId>scopt_${build.scala.version}</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+    </dependencies>
+</project>
