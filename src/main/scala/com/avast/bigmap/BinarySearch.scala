@@ -40,7 +40,7 @@ class BinarySearch[R <: Row](sortedTextFile: LargeFileReader,
 
   @tailrec
   final def search(row: R, from: Long, to: Long, depth: Int = 0): Option[R] = {
-    if (to - from == 0)
+    if (to - from <= 0)
       return None
     if (to - from < sequenceSearchTopLimit)
       return searchSequence(row, from, to)
