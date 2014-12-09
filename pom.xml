@@ -30,7 +30,7 @@
         <artifactId>avast-oss-parent</artifactId>
         <version>1.0.6</version>
     </parent>
-    <url>https://github.com/avast/big-map</url>
+    <url>https://github.com/avast/BigMap</url>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -54,9 +54,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:avast/big-map.git</connection>
-        <developerConnection>scm:git:git@github.com:avast/big-map.git</developerConnection>
-        <url>git@github.com:avast/big-map.git</url>
+        <connection>scm:git:git@github.com:avast/BigMap.git</connection>
+        <developerConnection>scm:git:git@github.com:avast/BigMap.git</developerConnection>
+        <url>git@github.com:avast/BigMap.git</url>
         <tag>HEAD</tag>
     </scm>
 
