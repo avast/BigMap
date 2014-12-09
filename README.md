@@ -32,9 +32,9 @@ Sorting have is processed in two steps:
  * merge temporary files to output file
 
 	java -cp ${CLASSPATH} com.avast.bigmap.TsvRowSorter \
-		--input intputDirectoryOrFile \
-		--output sortedOutputFile \
-		--key-columns 1 
+	 --input intputDirectoryOrFile \
+	 --output sortedOutputFile \
+	 --key-columns 1 
 
 Usage
 =====
