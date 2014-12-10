@@ -23,7 +23,7 @@
     <groupId>com.avast</groupId>
     <artifactId>big-map_${build.scala.version}</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <parent>
         <groupId>com.avast</groupId>
