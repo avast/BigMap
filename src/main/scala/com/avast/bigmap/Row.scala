@@ -66,10 +66,14 @@ class TsvRowComparator(implicit val keyColumns: Int)
     check(row1)
     check(row2)
 
-    for (column <- (0 to keyColumns - 1)) {
+    // for (column <- (0 to keyColumns - 1)) {
+    // optimized:
+    var column = 0
+    while (column < keyColumns) {
       val res = row1(column).compare(row2(column))
       if (res != 0)
         return res
+      column += 1
     }
     return 0
   }
