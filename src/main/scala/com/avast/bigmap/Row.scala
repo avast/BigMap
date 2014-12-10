@@ -28,7 +28,7 @@ trait TsvRow extends Row {
 
   def apply(row: Int): String = columns(row)
 
-  override def toString(): String = s"TsvRow{${str}}"
+  override def toString(): String = "TsvRow{" + str + "}"
 }
 
 class TsvRowArr(val columns: Array[String]

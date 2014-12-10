@@ -32,7 +32,7 @@ class TsvMap(sortedTextFile: File)(
     new TsvRowComparator()
   )
 
-  override def +[B1 >: Array[String]](kv: (Array[String], B1)): Map[Array[String], B1] = ???
+  override def +[B1 >: Array[String]](kv: (Array[String], B1)): Map[Array[String], B1] = sys.error("Extending map is not supported")
 
   def value(row: TsvRow): Array[String] = {
     val v = new Array[String](row.columns.length - keyColumns)
@@ -58,7 +58,7 @@ class TsvMap(sortedTextFile: File)(
     (key(row), value(row))
   })
 
-  override def -(key: Array[String]): Map[Array[String], Array[String]] = ???
+  override def -(key: Array[String]): Map[Array[String], Array[String]] = sys.error("Removing from map is not supported")
 }
 
 object TsvMapTest {

@@ -94,7 +94,7 @@ object BinarySearchTest {
       if (!foundAll)
         sys.error("some row missing!")
 
-      println(s"duration ${System.currentTimeMillis() - start} ms")
+      println("duration " + (System.currentTimeMillis() - start) + " ms")
     }
   }
 }

@@ -68,6 +68,24 @@
         <gpg.defaultKeyring>false</gpg.defaultKeyring>
     </properties>
 
+    <profiles>
+
+        <profile>
+            <id>scala-2.9</id>
+            <properties>
+                <build.scopt.scala.version>2.9.3</build.scopt.scala.version>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>scala-2.10</id>
+            <properties>
+                <build.scopt.scala.version>2.10</build.scopt.scala.version>
+            </properties>
+        </profile>
+
+    </profiles>
+
     <build>
         <plugins>
 
@@ -85,7 +103,7 @@
 
         <dependency>
             <groupId>com.github.scopt</groupId>
-            <artifactId>scopt_${build.scala.version}</artifactId>
+            <artifactId>scopt_${build.scopt.scala.version}</artifactId>
             <version>3.2.0</version>
         </dependency>
 

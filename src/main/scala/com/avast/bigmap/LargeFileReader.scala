@@ -96,7 +96,7 @@ class LargeFileReader(file: File) {
    */
   def apply(from: Long, length: Long): ByteBuffer = {
     if (length > Int.MaxValue)
-      sys.error(s"Cant allocate buffer for ${length} bytes.")
+      sys.error("Cant allocate buffer for " + length + " bytes.")
 
     val fromPage: Int = (from / LargeFileReader.PageSize).asInstanceOf[Int]
     val fromIndex: Int = (from % LargeFileReader.PageSize).asInstanceOf[Int]

@@ -73,7 +73,7 @@ class RowSorter[R <: Row](rowFactory: String => R,
         out.write(rowDelimiter)
       }
       out.close()
-      logger.debug(s"Sort ${to - from} lines to temp file ${chunkOutputFile}")
+      logger.debug("Sort " + (to - from) + " lines to temp file " + chunkOutputFile + "")
       chunkOutputFile
     }
 
@@ -213,7 +213,7 @@ class RowSorter[R <: Row](rowFactory: String => R,
         f.onComplete(t => queue.synchronized {
           queue.put(t.get)
           remainingTasks -= 1
-          logger.debug(s"remaining ${remainingTasks} merge tasks, ${queue.size()} files in queue")
+          logger.debug("remaining " + remainingTasks + " merge tasks, " + queue.size() + " files in queue")
         })
       }
     }
@@ -226,7 +226,7 @@ class RowSorter[R <: Row](rowFactory: String => R,
         val b = it.next()
         val f: Future[File] = future {
           val out = mergeSortedFiles(a, b)
-          logger.debug(s"${a}, ${b} merged to ${out}")
+          logger.debug("" + a + ", " + b + " merged to " + out + "")
           a.delete()
           b.delete()
           out
@@ -237,11 +237,11 @@ class RowSorter[R <: Row](rowFactory: String => R,
         // last chunk
         val src = a
         if (src.renameTo(outputFile)) {
-          logger.debug(s"Last chunk, rename ${files(0)} to ${outputFile}")
+          logger.debug("Last chunk, rename " + files(0) + " to " + outputFile + "")
         } else {
           FileUtils.copyFile(src, outputFile)
           src.delete()
-          logger.debug(s"Last chunk, copy ${files(0)} to ${outputFile}")
+          logger.debug("Last chunk, copy " + files(0) + " to " + outputFile + "")
         }
       }
     }
@@ -298,12 +298,12 @@ object TsvRowSorter extends App {
 
       val start0 = System.currentTimeMillis()
       val sortedChunks = sorter.splitToSortedChunks(inputFiles, memorySortRows)
-      logger.info(s"Sort chunks duration: ${System.currentTimeMillis() - start0} ms")
+      logger.info("Sort chunks duration: " + (System.currentTimeMillis() - start0) + " ms")
 
       val start = System.currentTimeMillis()
       //mergeSort(sortedChunks, outputFile)(keyColumns, columnDelimiter)
       sorter.mergeSort(sortedChunks, outputFile)
-      logger.info(s"Merge duration: ${System.currentTimeMillis() - start} ms")
+      logger.info("Merge duration: " + (System.currentTimeMillis() - start) + " ms")
     }
     case None => sys.error("Cant parse arguments.")
   }
