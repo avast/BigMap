@@ -40,11 +40,13 @@ Usage
 =====
 
 Scala:
+
 	val map = new TsvMap(new File(sortedTsvFile))
 	val key:Array[String] = Array("somekey")
 	val value:Option[Array[String]] = map.get(key)
 
 Java:
+
     String[] key = new String[]{"somekey"};
     Map<String[], String[]> map = new JTsvMap(new File(sortedTsvFile));
     String[] v = map.get(key);
