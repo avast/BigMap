@@ -1,9 +1,7 @@
 package com.avast.bigmap;
 
-import scala.Function0;
 import scala.Option;
 import scala.Tuple2;
-
 
 import java.io.File;
 import java.util.*;
