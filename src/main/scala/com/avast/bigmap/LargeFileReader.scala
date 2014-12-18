@@ -144,6 +144,17 @@ class LargeFileReader(file: File) {
     }
   }
 
+  def bytes(from: Long, to: Long): Array[Byte] = {
+    val buff = apply(from, to - from)
+    if (buff.hasArray && buff.position() == 0 && buff.limit() == buff.capacity()) {
+      buff.array()
+    } else {
+      val arr = new Array[Byte](buff.remaining())
+      buff.get(arr)
+      arr
+    }
+  }
+
   /**
    * Search first byte occurrence before start position (exclusive).
    *
@@ -187,28 +198,55 @@ class LargeFileReader(file: File) {
    *
    * @param fromOff inclusive
    * @param toOff exclusive
-   * @return iterator for rows
+   * @param transformation function that will transform line bytes
+   * @tparam T
+   * @return transformed line bytes
    */
-  def getLines(fromOff: Long, toOff: Long): Iterator[String] = new Iterator[String] {
+  def getTransformedLines[T](fromOff: Long, toOff: Long, transformation: Array[Byte] => T): Iterator[T] = new Iterator[T] {
 
     var pos: Long = fromOff
 
     override def hasNext: Boolean = pos < toOff
 
-    override def next(): String = {
+    override def next(): T = {
       val end = Math.min(toOff, searchNext(pos, LargeFileReader.RowDelimiter))
-      val str = string(pos, end)
+      val arr = bytes(pos, end)
       pos = end + 1
-      str
+      transformation(arr)
     }
   }
 
   /**
-   * Create iterator for lines in file
+   * Create iterator for lines in file area
    *
+   * @param fromOff inclusive
+   * @param toOff exclusive
+   * @return iterator for lines
+   */
+  def getLinesAsBytes(fromOff: Long, toOff: Long): Iterator[Array[Byte]] = getTransformedLines(fromOff, toOff, b => b)
+
+  /**
+   * Create iterator for lines in file area
+   *
+   * @param fromOff inclusive
+   * @param toOff exclusive
    * @return iterator for rows
    */
+  def getLines(fromOff: Long, toOff: Long): Iterator[String] = getTransformedLines(fromOff, toOff, b => new String(b))
+
+  /**
+   * Create iterator for lines in file
+   *
+   * @return iterator for lines
+   */
   def getLines(): Iterator[String] = getLines(0, length)
+
+  /**
+   * Create iterator for lines in file
+   *
+   * @return iterator for lines
+   */
+  def getLinesAsBytes(): Iterator[Array[Byte]] = getLinesAsBytes(0, length)
 }
 
 /**

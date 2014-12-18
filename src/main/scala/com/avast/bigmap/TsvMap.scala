@@ -28,23 +28,15 @@ class TsvMap(sortedTextFile: File)(
 
   lazy val fileReader = new LargeFileReader(sortedTextFile)
   lazy val bSearch = new BinarySearch[TsvRow](fileReader)(
-    rowFactory.apply,
+    rowFactory,
     new TsvRowComparator()
   )
 
   override def +[B1 >: Array[String]](kv: (Array[String], B1)): Map[Array[String], B1] = sys.error("Extending map is not supported")
 
-  def value(row: TsvRow): Array[String] = {
-    val v = new Array[String](row.columns.length - keyColumns)
-    Array.copy(row.columns, keyColumns, v, 0, v.length)
-    v
-  }
+  def value(row: TsvRow): Array[String] = row.columns(keyColumns, row.columnCount)
 
-  def key(row: TsvRow): Array[String] = {
-    val v = new Array[String](keyColumns)
-    Array.copy(row.columns, 0, v, 0, v.length)
-    v
-  }
+  def key(row: TsvRow): Array[String] = row.columns(0, keyColumns)
 
   override def get(key: Array[String]): Option[Array[String]] = bSearch
     .search(rowFactory(key))

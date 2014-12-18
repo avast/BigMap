@@ -27,7 +27,7 @@ import scala.annotation.tailrec
 class BinarySearch[R <: Row](sortedTextFile: LargeFileReader,
                              sequenceSearchTopLimit: Long = 0
                               )(
-                              implicit rowFactory: String => R,
+                              implicit rowFactory: RowFactory[R],
                               rowComparator: Comparator[R]
                               ) {
 
@@ -48,7 +48,7 @@ class BinarySearch[R <: Row](sortedTextFile: LargeFileReader,
     val half = from + ((to - from) / 2)
     val prevDelim = sortedTextFile.searchPrev(half, LargeFileReader.RowDelimiter)
     val nextDelim = sortedTextFile.searchNext(half, LargeFileReader.RowDelimiter)
-    val candidate = rowFactory(sortedTextFile.string(prevDelim + 1, nextDelim))
+    val candidate = rowFactory(sortedTextFile.bytes(prevDelim + 1, nextDelim))
 
     val cmp = rowComparator.compare(row, candidate)
     if (cmp < 0) {
@@ -74,10 +74,10 @@ object BinarySearchTest {
     val sortedFile = args(0)
     val sample = args(1)
 
-    val row = new TsvRowFactory()(keyColumns, columnDelimiter)
+    val rowFactory = new TsvRowFactory()(keyColumns, columnDelimiter)
     val f = new LargeFileReader(new File(sortedFile))
     val s = new BinarySearch[TsvRow](sortedTextFile = f, sequenceSearchTopLimit = 0)(
-      row.apply,
+      rowFactory,
       new TsvRowComparator()(keyColumns)
     )
 
@@ -86,8 +86,8 @@ object BinarySearchTest {
     while (true) {
       val start = System.currentTimeMillis()
       val foundAll = testFile
-        .getLines()
-        .map(row(_))
+        .getLinesAsBytes()
+        .map(rowFactory(_))
         .map(s.search(_))
         .forall(_.isDefined)
 

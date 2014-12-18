@@ -44,7 +44,7 @@ import scala.concurrent._
  *
  * @tparam R
  */
-class RowSorter[R <: Row](rowFactory: String => R,
+class RowSorter[R <: Row](rowFactory: RowFactory[R],
                           rowComparator: Comparator[R],
                           tempFileSuffix: String = ".tmp") {
 
@@ -88,12 +88,14 @@ class RowSorter[R <: Row](rowFactory: String => R,
         val sortedChunks = state._3
         rowArr(pos) = rowFactory(row)
         if (pos == rowArr.length - 1) {
+          // rowArr buffer is full, sort it to temp file
           (0, new Array[Row](memorySortRows), sortedChunks :+ sortRows(rowArr, 0, rowArr.length))
         } else {
           (pos + 1, rowArr, sortedChunks)
         }
       })
 
+      // sort last chunk
       val pos = state._1
       val rowArr = state._2
       val sortedChunks = state._3
@@ -292,7 +294,7 @@ object TsvRowSorter extends App {
         sys.error("Output already exists.")
 
       val sorter = new RowSorter[TsvRow](
-        new TsvRowFactory()(keyColumns, columnDelimiter).apply,
+        new TsvRowFactory()(keyColumns, columnDelimiter),
         new TsvRowComparator()(keyColumns),
         ".tsv")
 

@@ -16,28 +16,38 @@
 
 package com.avast.bigmap
 
+import java.util
 import java.util.Comparator
 
 trait Row {
-  val str: String
 
+  val str: String
 }
 
 trait TsvRow extends Row {
-  val columns: Array[String]
 
-  def apply(row: Int): String = columns(row)
+  def apply(row: Int): String
+
+  def columns(from: Int, to: Int): Array[String]
+
+  val columnCount: Int
 
   override def toString(): String = "TsvRow{" + str + "}"
 }
 
-class TsvRowArr(val columns: Array[String]
+class TsvRowArr(val columns: IndexedSeq[String]
                  )(
                  implicit val keyColumns: Int,
                  implicit val columnDelimiter: Char
                  ) extends TsvRow {
 
+  def apply(row: Int): String = columns(row)
+
   override lazy val str: String = columns.mkString(columnDelimiter + "")
+
+  lazy val columnCount: Int = columns.size
+
+  override def columns(from: Int, to: Int): Array[String] = util.Arrays.copyOfRange(columns.toArray, from, to)
 }
 
 class TsvRowImpl(val str: String
@@ -46,12 +56,59 @@ class TsvRowImpl(val str: String
                   implicit val columnDelimiter: Char
                   ) extends TsvRow {
 
-  lazy val columns = str.split(columnDelimiter)
+  def apply(row: Int): String = columnArr(row)
+
+  lazy val columnArr: Array[String] = str.split(columnDelimiter)
+
+  lazy val columnCount: Int = columnArr.size
+
+  override def columns(from: Int, to: Int): Array[String] = util.Arrays.copyOfRange(columnArr, from, to)
 }
 
-class TsvRowFactory(implicit keyColumns: Int, columnDelimiter: Char) {
+trait RowFactory[R] {
+
+  def apply(str: String): R
+
+  def apply(bytes: Array[Byte]): R = apply(new String(bytes))
+}
+
+class TsvRowFactory(implicit keyColumns: Int, columnDelimiter: Char)
+  extends RowFactory[TsvRow] {
+
+  // Is delimiter some ascii character < 0x80 ?
+  val isAsciiDelimiter: Boolean = ((columnDelimiter & 0xff00) == 0) && (columnDelimiter.toByte > 0)
+  val byteDelimiter: Byte = columnDelimiter.toByte
+  val expectedColumns: Int = math.max(keyColumns + 1, 10)
 
   def apply(str: String): TsvRow = new TsvRowImpl(str)
+
+  override def apply(bytes: Array[Byte]): TsvRow = if (isAsciiDelimiter) {
+    /**
+     * If delimiter character is a ascii character ( < 0x80), we can split row byte array
+     * to chunks that represents columns. It is faster than build String from row these bytes
+     * and then split it by regular expression in
+     * scala.collection.StringLike.split(separator: Char)
+     */
+    var i = 0
+    var start = 0
+    import scala.collection.mutable
+    val list = new mutable.ArrayBuffer[String](expectedColumns)
+    val len = bytes.length
+    while (i < len) {
+      if (bytes(i) == byteDelimiter) {
+        list += new String(util.Arrays.copyOfRange(bytes, start, i))
+        start = i + 1
+      }
+      i += 1
+    }
+    if (start == i)
+      list += new String() //new Array[Byte](0)
+    else
+      list += new String(util.Arrays.copyOfRange(bytes, start, i))
+    new TsvRowArr(list)
+  } else {
+    apply(new String(bytes))
+  }
 
   def apply(str: Array[String]): TsvRow = new TsvRowArr(str)
 }
@@ -59,7 +116,7 @@ class TsvRowFactory(implicit keyColumns: Int, columnDelimiter: Char) {
 class TsvRowComparator(implicit val keyColumns: Int)
   extends Comparator[TsvRow] {
 
-  def check(row: TsvRow) = if (row.columns.length < keyColumns)
+  def check(row: TsvRow) = if (row.columnCount < keyColumns)
     sys.error("To few columns in row")
 
   override def compare(row1: TsvRow, row2: TsvRow): Int = {
