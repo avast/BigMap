@@ -25,26 +25,26 @@ CONS:
 Sorting of huge TSV files
 =========================
 
-Part of this this project is a tool for sorting huge TSV files.
-Sorting have is processed in two steps:
+Part of this project is a tool for sorting huge TSV files.
+Sorting is processed in two steps:
 
  * divide input file(s) to row chunks (these chunks are sorted in heap) and write chunks to disk
  * merge temporary files to output file
 
 
-	java -cp ${CLASSPATH} com.avast.bigmap.TsvRowSorter 
-	--input intputDirectoryOrFile 
-	--output sortedOutputFile 
-	--key-columns 1 
+    java -cp ${CLASSPATH} com.avast.bigmap.TsvRowSorter 
+      --input intputDirectoryOrFile 
+      --output sortedOutputFile 
+      --key-columns 1 
 
 Usage
 =====
 
 Scala:
 
-	val map = new TsvMap(new File(sortedTsvFile))
-	val key:Array[String] = Array("somekey")
-	val value:Option[Array[String]] = map.get(key)
+    val map = new TsvMap(new File(sortedTsvFile))
+    val key:Array[String] = Array("somekey")
+    val value:Option[Array[String]] = map.get(key)
 
 Java:
 
