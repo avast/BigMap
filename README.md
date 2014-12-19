@@ -42,7 +42,7 @@ Usage
 
 Scala:
 
-    val map:TsvMap = new TsvMap(new File(sortedTsvFile))
+    val map:Map[Array[String], Array[String]] = new TsvMap(new File(sortedTsvFile))
     val key:Array[String] = Array("somekey")
     val value:Option[Array[String]] = map.get(key)
 
