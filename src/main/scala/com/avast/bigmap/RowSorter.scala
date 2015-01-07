@@ -255,11 +255,11 @@ object TsvRowSorter extends App {
   val logger = LoggerFactory.getLogger(this.getClass)
 
   val columnDelimiter: Char = '\t'
-  val memorySortRows = 1000 * 1000;
 
   case class Args(input: Option[String] = None,
                   outputFile: Option[String] = None,
-                  keyColumns: Int = 1)
+                  keyColumns: Int = 1,
+                  memorySortLimit: Int = 1000 * 1000)
 
   val argParser = new scopt.OptionParser[Args]("tsv-sorter") {
     head("TSV Sorter", "1.0")
@@ -271,20 +271,27 @@ object TsvRowSorter extends App {
       .text("Sorted output file.")
     opt[Int]("key-columns")
       .action((v, c) => c.copy(keyColumns = v))
-      .text("Number of key columns.")
+      .text("Number of key columns (default " + Args().keyColumns + ").")
+    opt[Int]("memory-sort-limit")
+      .action((v, c) => c.copy(memorySortLimit = v))
+      .text("Number of key sorted in memory (default " + Args().memorySortLimit + ").")
   }
 
 
   argParser.parse(args, Args()) match {
-    case Some(Args(input, output, keyColumns)) => {
+    case Some(Args(input, output, keyColumns, memorySortLimit)) => {
       if (keyColumns <= 0)
         sys.error("Key columns have to be more than zero.")
+      if (keyColumns <= 0)
+        sys.error("Memory sort limit have to be greater than zero.")
 
       val inputFile = new File(input match {
         case Some(input) => input
         case None => sys.error("No input specified.")
       })
       val inputFiles: Seq[File] = if (inputFile.isFile) Seq(inputFile) else inputFile.listFiles()
+      if (inputFiles == null)
+        sys.error("Bad input.")
 
       val outputFile = new File(output match {
         case Some(out) => out
@@ -299,7 +306,7 @@ object TsvRowSorter extends App {
         ".tsv")
 
       val start0 = System.currentTimeMillis()
-      val sortedChunks = sorter.splitToSortedChunks(inputFiles, memorySortRows)
+      val sortedChunks = sorter.splitToSortedChunks(inputFiles, memorySortLimit)
       logger.info("Sort chunks duration: " + (System.currentTimeMillis() - start0) + " ms")
 
       val start = System.currentTimeMillis()
