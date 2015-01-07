@@ -35,7 +35,8 @@ trait TsvRow extends Row {
   override def toString(): String = "TsvRow{" + str + "}"
 }
 
-class TsvRowArr(val columns: IndexedSeq[String]
+class TsvRowArr(val columns: IndexedSeq[String],
+                val knownStr: Option[String] = None // in some cases we know whole string of row, so lazy 'str' is cheaper
                  )(
                  implicit val keyColumns: Int,
                  implicit val columnDelimiter: Char
@@ -43,7 +44,10 @@ class TsvRowArr(val columns: IndexedSeq[String]
 
   def apply(row: Int): String = columns(row)
 
-  override lazy val str: String = columns.mkString(columnDelimiter + "")
+  override lazy val str: String = knownStr match {
+    case Some(str) => str
+    case None => columns.mkString(columnDelimiter + "")
+  }
 
   lazy val columnCount: Int = columns.size
 
@@ -75,20 +79,20 @@ trait RowFactory[R] {
 class TsvRowFactory(implicit keyColumns: Int, columnDelimiter: Char)
   extends RowFactory[TsvRow] {
 
-  // Is delimiter some ascii character < 0x80 ?
+  // Is delimiter some ascii character < 0x80 (signed char > 0) ?
   val isAsciiDelimiter: Boolean = ((columnDelimiter & 0xff00) == 0) && (columnDelimiter.toByte > 0)
   val byteDelimiter: Byte = columnDelimiter.toByte
   val expectedColumns: Int = math.max(keyColumns + 1, 10)
 
-  def apply(str: String): TsvRow = new TsvRowImpl(str)
+  def fromString(str: String): TsvRow = new TsvRowImpl(str)
 
-  override def apply(bytes: Array[Byte]): TsvRow = if (isAsciiDelimiter) {
-    /**
-     * If delimiter character is a ascii character ( < 0x80), we can split row byte array
-     * to chunks that represents columns. It is faster than build String from row these bytes
-     * and then split it by regular expression in
-     * scala.collection.StringLike.split(separator: Char)
-     */
+  /**
+   * If delimiter character is a ascii character ( < 0x80), we can split row byte array
+   * to chunks that represents columns. It is faster than build String from these bytes
+   * and then split it by regular expression in
+   * scala.collection.StringLike.split(separator: Char)
+   */
+  def fromBytes(bytes: Array[Byte], knownStr: Option[String] = None): TsvRow = {
     var i = 0
     var start = 0
     import scala.collection.mutable
@@ -96,18 +100,28 @@ class TsvRowFactory(implicit keyColumns: Int, columnDelimiter: Char)
     val len = bytes.length
     while (i < len) {
       if (bytes(i) == byteDelimiter) {
-        list += new String(util.Arrays.copyOfRange(bytes, start, i))
+        list += new String(bytes, start, i - start)
         start = i + 1
       }
       i += 1
     }
     if (start == i)
-      list += new String() //new Array[Byte](0)
+      list += new String()
     else
-      list += new String(util.Arrays.copyOfRange(bytes, start, i))
-    new TsvRowArr(list)
+      list += new String(bytes, start, i - start)
+    new TsvRowArr(list, knownStr)
+  }
+
+  def apply(str: String): TsvRow = if (isAsciiDelimiter) {
+    fromBytes(str.getBytes, Some(str))
   } else {
-    apply(new String(bytes))
+    fromString(str)
+  }
+
+  override def apply(bytes: Array[Byte]): TsvRow = if (isAsciiDelimiter) {
+    fromBytes(bytes)
+  } else {
+    fromString(new String(bytes))
   }
 
   def apply(str: Array[String]): TsvRow = new TsvRowArr(str)
