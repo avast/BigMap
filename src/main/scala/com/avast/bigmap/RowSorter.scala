@@ -282,7 +282,7 @@ object TsvRowSorter extends App {
     case Some(Args(input, output, keyColumns, memorySortLimit)) => {
       if (keyColumns <= 0)
         sys.error("Key columns have to be more than zero.")
-      if (keyColumns <= 0)
+      if (memorySortLimit <= 0)
         sys.error("Memory sort limit have to be greater than zero.")
 
       val inputFile = new File(input match {
