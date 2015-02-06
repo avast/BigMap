@@ -25,9 +25,9 @@ import org.apache.commons.io.FileUtils
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.Iterator
-import scala.io.Source
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.parallel.{ForkJoinTasks, TaskSupport}
 import scala.concurrent._
+import scala.io.Source
 
 /**
  * Util class for sorting huge text files (bigger than heap size) by rows.
@@ -60,7 +60,8 @@ class RowSorter[R <: Row](rowFactory: RowFactory[R],
    * @param memorySortRows
    * @return Sequence of files with sorted line chunks.
    */
-  def splitToSortedChunks(inputFiles: Seq[File], memorySortRows: Int): Seq[File] = {
+  def splitToSortedChunks(inputFiles: Seq[File], memorySortRows: Int)
+                         (implicit taskSupport: TaskSupport): Seq[File] = {
 
     def sortRows(rows: Array[Row], from: Int, to: Int): File = {
       val chunkOutputFile = tmpFile()
@@ -77,8 +78,9 @@ class RowSorter[R <: Row](rowFactory: RowFactory[R],
       chunkOutputFile
     }
 
-
-    val chunkSeq = inputFiles.par.map(f => {
+    val parInputFiles = inputFiles.par
+    parInputFiles.tasksupport = taskSupport
+    val chunkSeq = parInputFiles.map(f => {
 
       val state = Source.fromInputStream(new FileInputStream(f))
         .getLines()
@@ -192,7 +194,7 @@ class RowSorter[R <: Row](rowFactory: RowFactory[R],
    * @param files
    * @param outputFile
    */
-  def mergeSort(files: Seq[File], outputFile: File): Unit = {
+  def mergeSort(files: Seq[File], outputFile: File)(implicit execctx: ExecutionContext): Unit = {
 
     class FileIt extends Iterator[File] {
       val queue = {
@@ -255,6 +257,10 @@ object TsvRowSorter extends App {
   val logger = LoggerFactory.getLogger(this.getClass)
 
   val columnDelimiter: Char = '\t'
+
+  // implicits for parallel task support
+  implicit val taskSupport = ForkJoinTasks.defaultForkJoinPool
+  implicit val executionContext = ExecutionContext.Implicits.global
 
   case class Args(input: Option[String] = None,
                   outputFile: Option[String] = None,
