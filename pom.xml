@@ -84,6 +84,12 @@
             </properties>
         </profile>
 
+        <profile>
+            <id>scala-2.11</id>
+            <properties>
+                <build.scopt.scala.version>2.11</build.scopt.scala.version>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
