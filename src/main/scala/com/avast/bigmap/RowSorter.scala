@@ -25,7 +25,7 @@ import org.apache.commons.io.FileUtils
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.Iterator
-import scala.collection.parallel.{ForkJoinTasks, TaskSupport}
+import scala.collection.parallel.{ForkJoinTaskSupport, TaskSupport}
 import scala.concurrent._
 import scala.io.Source
 
@@ -259,7 +259,7 @@ object TsvRowSorter extends App {
   val columnDelimiter: Char = '\t'
 
   // implicits for parallel task support
-  implicit val taskSupport = ForkJoinTasks.defaultForkJoinPool
+  implicit val taskSupport = new ForkJoinTaskSupport
   implicit val executionContext = ExecutionContext.Implicits.global
 
   case class Args(input: Option[String] = None,
