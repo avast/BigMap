@@ -66,6 +66,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.keyname>A03063C5</gpg.keyname>
         <gpg.defaultKeyring>false</gpg.defaultKeyring>
+        <resolved.pom>target/resolvedPom.xml</resolved.pom>
     </properties>
 
     <profiles>
@@ -90,6 +91,42 @@
                 <build.scopt.scala.version>2.11</build.scopt.scala.version>
             </properties>
         </profile>
+
+        <profile>
+            <id>resolve</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+
+                <property>
+                    <name>!noresolve</name>
+                </property>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.sap.prd.mobile.ios.maven.plugins</groupId>
+                        <artifactId>resolve-pom-maven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <id>resolve-pom-props</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>resolve-pom-props</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <resolvedPomName>
+                                ${resolved.pom}
+                            </resolvedPomName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 
     <build>
